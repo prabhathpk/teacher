@@ -1,7 +1,7 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 export const SlotContext = createContext();
-
+const API_URL = "https://cac527a5057585eabfd9.free.beeceptor.com";
 const initialRooms = [
   { id: "1", name: "Room A", capacity: 30 },
   { id: "2", name: "Room B", capacity: 25 },
@@ -16,38 +16,167 @@ const initialSlots = [
 export const SlotProvider = ({ children }) => {
   const [rooms, setRooms] = useState(initialRooms);
   const [slots, setSlots] = useState(initialSlots);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const addRoom = (roomData) => {
+  useEffect(() => {
+    fetchRooms();
+    fetchSlots();
+  }, []);
+
+  const fetchRooms = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/rooms`);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      // Only update if we have valid data, otherwise keep initialRooms
+      if (data && Array.isArray(data) && data.length > 0) {
+        setRooms(data);
+      }
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch rooms:", err);
+      setError(err.message);
+      // Keep initialRooms as fallback on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSlots = async () => {
+    try {
+      const response = await fetch(`${API_URL}/slots`);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      // Only update if we have valid data, otherwise keep initialSlots
+      if (data && Array.isArray(data) && data.length > 0) {
+        setSlots(data);
+      }
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+      setError(err.message);
+      // Keep initialSlots as fallback on error
+    }
+  };
+  const addRoom = async (roomData) => {
     const id = Date.now().toString();
-    setRooms((prevRooms) => [...prevRooms, { id, ...roomData }]);
-    return id;
+    const newRoom = { id, ...roomData };
+    try {
+      const response = await fetch(`${API_URL}/rooms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRoom),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setRooms((prevRooms) => [...prevRooms, newRoom]);
+      return id;
+    } catch (err) {
+      console.error("Failed to add room:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const deleteRoom = (id) => {
-    setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
-    setSlots((prevSlots) => prevSlots.filter((slot) => slot.roomId !== id));
+  const deleteRoom = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/rooms/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
+      setSlots((prevSlots) => prevSlots.filter((slot) => slot.roomId !== id));
+    } catch (err) {
+      console.error("Failed to delete room:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const updateRoom = (id, roomData) => {
-    setRooms((prevRooms) =>
-      prevRooms.map((room) => (room.id === id ? { ...room, ...roomData } : room))
-    );
+  const updateRoom = async (id, roomData) => {
+    try {
+      const response = await fetch(`${API_URL}/rooms/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(roomData),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setRooms((prevRooms) =>
+        prevRooms.map((room) => (room.id === id ? { ...room, ...roomData } : room))
+      );
+    } catch (err) {
+      console.error("Failed to update room:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const addSlot = (slotData) => {
+  const addSlot = async (slotData) => {
     const id = Date.now().toString();
-    setSlots((prevSlots) => [...prevSlots, { id, ...slotData }]);
-    return id;
+    const newSlot = { id, ...slotData };
+    try {
+      const response = await fetch(`${API_URL}/slots`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSlot),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setSlots((prevSlots) => [...prevSlots, newSlot]);
+      return id;
+    } catch (err) {
+      console.error("Failed to add slot:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const deleteSlot = (id) => {
-    setSlots((prevSlots) => prevSlots.filter((slot) => slot.id !== id));
+  const deleteSlot = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/slots/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setSlots((prevSlots) => prevSlots.filter((slot) => slot.id !== id));
+    } catch (err) {
+      console.error("Failed to delete slot:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const updateSlot = (id, slotData) => {
-    setSlots((prevSlots) =>
-      prevSlots.map((slot) => (slot.id === id ? { ...slot, ...slotData } : slot))
-    );
+  const updateSlot = async (id, slotData) => {
+    try {
+      const response = await fetch(`${API_URL}/slots/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(slotData),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setSlots((prevSlots) =>
+        prevSlots.map((slot) => (slot.id === id ? { ...slot, ...slotData } : slot))
+      );
+    } catch (err) {
+      console.error("Failed to update slot:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
   const getSlotsByRoom = (roomId) => {
@@ -57,16 +186,44 @@ export const SlotProvider = ({ children }) => {
   const getRoomById = (id) => {
     return rooms.find((room) => room.id === id);
   };
-  const lockslot = (id) => {
-    setSlots((prevSlots) =>
-      prevSlots.map((slot) => (slot.id === id ? { ...slot, islocked: true } : slot))
-    );
+  const lockslot = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/slots/${id}/lock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ islocked: true }),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setSlots((prevSlots) =>
+        prevSlots.map((slot) => (slot.id === id ? { ...slot, islocked: true } : slot))
+      );
+    } catch (err) {
+      console.error("Failed to lock slot:", err);
+      setError(err.message);
+      throw err;
+    }
   };
 
-  const unlockslot = (id) => {
-    setSlots((prevSlots) =>
-      prevSlots.map((slot) => (slot.id === id ? { ...slot, islocked: false } : slot))
-    );
+  const unlockslot = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/slots/${id}/lock`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ islocked: false }),
+      });
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      setSlots((prevSlots) =>
+        prevSlots.map((slot) => (slot.id === id ? { ...slot, islocked: false } : slot))
+      );
+    } catch (err) {
+      console.error("Failed to unlock slot:", err);
+      setError(err.message);
+      throw err;
+    }
   };
   return (
     <SlotContext.Provider
@@ -82,7 +239,9 @@ export const SlotProvider = ({ children }) => {
         getSlotsByRoom,
         getRoomById,
         lockslot,
-        unlockslot
+        unlockslot,
+        loading,
+        error,
       }}
     >
       {children}
