@@ -4,21 +4,21 @@ import { UserContext, validRoles } from "./UserContext";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const { users } = useContext(UserContext); 
+  const { users ,fetchUsers} = useContext(UserContext); 
   const [currentUser, setCurrentUser] = useState(null);
 
   const login = (username, password) => {
-    if (!users) return false;
+    fetchUsers();
+    if (!users) return null;
     const foundUser = users.find(
       (u) => u.username === username && u.password === password
     );
     if (foundUser) {
-      // only allow users with valid roles
-      if (!validRoles.includes(foundUser.role)) return false;
+      if (!validRoles.includes(foundUser.role)) return null;
       setCurrentUser(foundUser);
-      return true;
+      return foundUser.role;
     }
-    return false;
+    return null;
   };
 
   const logout = () => setCurrentUser(null);

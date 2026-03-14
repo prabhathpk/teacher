@@ -32,7 +32,7 @@ export const SlotProvider = ({ children }) => {
         throw new Error(`API error: ${response.statusText}`);
       }
       const data = await response.json();
-      // Only update if we have valid data, otherwise keep initialRooms
+      
       if (data && Array.isArray(data) && data.length > 0) {
         setRooms(data);
       }
@@ -40,7 +40,7 @@ export const SlotProvider = ({ children }) => {
     } catch (err) {
       console.error("Failed to fetch rooms:", err);
       setError(err.message);
-      // Keep initialRooms as fallback on error
+   
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export const SlotProvider = ({ children }) => {
         throw new Error(`API error: ${response.statusText}`);
       }
       const data = await response.json();
-      // Only update if we have valid data, otherwise keep initialSlots
+
       if (data && Array.isArray(data) && data.length > 0) {
         setSlots(data);
       }
@@ -61,7 +61,6 @@ export const SlotProvider = ({ children }) => {
     } catch (err) {
       console.error("Failed to fetch slots:", err);
       setError(err.message);
-      // Keep initialSlots as fallback on error
     }
   };
   const addRoom = async (roomData) => {

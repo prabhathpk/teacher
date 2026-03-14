@@ -4,7 +4,7 @@ export const UserContext = createContext();
 
 export const validRoles = ["admin", "manager", "teacher"];
 
-const API_URL = "https://teacher.free.beeceptor.com";
+const API_URL = "https://cac527a5057585eabfd9.free.beeceptor.com";
 //const API_URL = "https://api.restful-api.dev"; 
 const API_KEY = "9777c829-9c26-4a2b-b21a-4b45fef32eb2";
 const initialUsers = [
@@ -13,7 +13,7 @@ const initialUsers = [
   { id: "3", username: "teacher", password: "123", role: "teacher" },
 ];
 
-export const UserProvider = ({ children }) => {
+ const UserProvider = ({ children }) => {
   const [users, setUsers] = useState(initialUsers);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,7 +27,7 @@ export const UserProvider = ({ children }) => {
       setLoading(true);
       const response = await fetch(`${API_URL}/users`, {
         headers: {
-         "Content-Type": "application/json",
+          'Authorization': `Bearer ${API_KEY}`
         }
       });
       if (!response.ok) {
@@ -37,16 +37,6 @@ export const UserProvider = ({ children }) => {
      
       if (data && Array.isArray(data) && data.length > 0) {
         setUsers(data);
-      } else {
-        // Initialize by posting initialUsers
-        for (const user of initialUsers) {
-          await fetch(`${API_URL}/users`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(user),
-          });
-        }
-        setUsers(initialUsers);
       }
       setError(null);
     } catch (err) {
@@ -68,6 +58,7 @@ export const UserProvider = ({ children }) => {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${API_KEY}`
         },
         body: JSON.stringify(newUser),
       });
@@ -86,7 +77,7 @@ export const UserProvider = ({ children }) => {
       const response = await fetch(`${API_URL}/users/${id}`, {
         method: "DELETE",
         headers: {
-           "Content-Type": "application/json",
+          'Authorization': `Bearer ${API_KEY}`
         }
       });
       if (!response.ok) {
@@ -108,6 +99,7 @@ export const UserProvider = ({ children }) => {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${API_KEY}`
         },
         body: JSON.stringify(user),
       });
